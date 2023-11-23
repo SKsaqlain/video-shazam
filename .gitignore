@@ -12,6 +12,8 @@ dataset/Audios
 dataset/Queries
 dataset/Videos
 # Distribution / packaging
+.DS_Store
+.idea
 .Python
 build/
 develop-eggs/
