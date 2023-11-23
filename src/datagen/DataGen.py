@@ -1,7 +1,19 @@
 import cv2
 import os
+from PIL import Image
+import logging
 
-def extract_frames(video_path, output_folder):
+logger=logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+
+def downscale_image(original_frame, new_width, new_height):
+    img_ycrcb = cv2.cvtColor(original_frame, cv2.COLOR_RGB2YCrCb)
+    Y, Cr, Cb = cv2.split(img_ycrcb)
+    downscaled_image = cv2.resize(Y, (new_width, new_height), interpolation=cv2.INTER_AREA)
+    return downscaled_image
+
+def extract_frames(video_path, output_folder,new_width,new_height,label):
     # Create the output folder if it doesn't exist
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
@@ -15,21 +27,31 @@ def extract_frames(video_path, output_folder):
     while success:
         # Save frame every second
         if count % int(fps) == 0:
-            frame_file = os.path.join(output_folder, f"frame_{count // int(fps)}.jpg")
+            frame_file = os.path.join(output_folder, f"frame_{count // int(fps)}_{label}.jpg")
+            image=downscale_image(image,new_width,new_height)
             cv2.imwrite(frame_file, image)     # save frame as JPEG file
             print(f"Saved {frame_file}")
 
         success, image = vidcap.read()
+
         count += 1
 
     vidcap.release()
     print("Done extracting Frames.")
 
+
+def extractLabel(filePath):
+    return filePath.split("/")[-1].split(".")[0]
 def main():
-    # Example usage
-    video_path = '/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Videos/video1.mp4'  # Replace with your video path
-    output_folder = '/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Frames'     # Replace with your desired output folder
-    extract_frames(video_path, output_folder)
+    rootPath="/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Videos"
+    videFileName=os.listdir(rootPath)
+    for file in videFileName:
+        filePath=rootPath+"/"+file
+        logger.info("Extracting frames from video")
+        label=extractLabel(filePath)
+        output_folder = '/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Frames'
+        extract_frames(filePath, output_folder,100,100,label)
+        logger.info("Done extracting frames from video")
 
 if __name__ == "__main__":
     main()
