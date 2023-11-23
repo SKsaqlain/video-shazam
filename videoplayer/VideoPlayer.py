@@ -76,6 +76,7 @@ class VideoPlayer:
     def update(self):
         if self.vid.isOpened():
             ret, frame = self.vid.read()
+
             if ret:
                 try:
                     self.photo = ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
