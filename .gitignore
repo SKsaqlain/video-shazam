@@ -6,6 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
+
+#ignore huge datasets
+dataset/Audios
+dataset/Queries
+dataset/Videos
 # Distribution / packaging
 .Python
 build/
