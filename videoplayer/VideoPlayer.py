@@ -12,6 +12,7 @@ class VideoPlayer:
         self.video_source = video_source
         self.audio_source = audio_source
         self.vid = cv2.VideoCapture(video_source)
+        self.running = True
 
         if not self.vid.isOpened():
             raise ValueError("Unable to open video source", video_source)
@@ -66,23 +67,29 @@ class VideoPlayer:
                 self.update()
 
     def stream(self):
-        while self.playing:
+        while self.running and self.playing:
             if not self.paused:
-                self.update()
+                if not self.update():
+                    break
                 threading.Event().wait(self.delay / 1000.0)
 
     def update(self):
         if self.vid.isOpened():
             ret, frame = self.vid.read()
             if ret:
-                self.photo = ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
-                self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
+                try:
+                    self.photo = ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+                    self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
+                except tk.TclError:
+                    return False  # Window has been closed
             else:
                 self.playing = False
                 pygame.mixer.music.stop()
+        return True
 
     def on_close(self):
         """Handle window close event."""
+        self.running = False  # Signal the thread to stop
         self.playing = False
         if self.vid.isOpened():
             self.vid.release()
