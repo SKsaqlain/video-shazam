@@ -49,9 +49,27 @@ def main():
         filePath=rootPath+"/"+file
         logger.info("Extracting frames from video")
         label=extractLabel(filePath)
-        output_folder = '/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Frames'
+        os.makedirs('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Data/Train/'+label, exist_ok=True)
+        output_folder = '/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Data/Train/'+label
         extract_frames(filePath, output_folder,100,100,label)
         logger.info("Done extracting frames from video")
 
+def extractQueriesLabel(filePath):
+    return filePath.split("/")[-1].split(".")[0].split("_")[0]
+def mainForQueries():
+    rootPath="/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Queries"
+    videFileName=os.listdir(rootPath)
+    for file in videFileName:
+        if(file.endswith(".mp4")):
+
+            filePath=rootPath+"/"+file
+            logger.info("Extracting frames from video")
+            label=extractQueriesLabel(filePath)
+            os.makedirs('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Data/Valid/'+label, exist_ok=True)
+            output_folder = '/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Data/Valid/'+label
+            extract_frames(filePath, output_folder,100,100,label)
+            logger.info("Done extracting frames from video")
+
 if __name__ == "__main__":
     main()
+    # mainForQueries()
