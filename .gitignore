@@ -12,6 +12,9 @@ dataset/Audios
 dataset/Queries
 dataset/Videos
 dataset/Frames
+dataset/Data/Test
+dataset/Data/Train
+dataset/Data/Valid
 # Distribution / packaging
 .DS_Store
 .idea
