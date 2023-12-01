@@ -12,6 +12,7 @@ class VideoPlayer:
         self.video_source = video_source
         self.audio_source = audio_source
         self.vid = cv2.VideoCapture(video_source)
+        
         self.running = True
 
         if not self.vid.isOpened():
