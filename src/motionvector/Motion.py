@@ -16,7 +16,6 @@ def display_frame(frame,diff):
         return
 
 def calculate_motion(video_path):
-    # Open the video file
     cap = cv2.VideoCapture(video_path)
     ret, prev_frame = cap.read()
     fps = cap.get(cv2.CAP_PROP_FPS)  # Frames per second
@@ -30,26 +29,13 @@ def calculate_motion(video_path):
         if not ret:
             break
 
-        # Convert to grayscale
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-        # Calculate the absolute difference between current frame and previous frame
         diff = cv2.absdiff(prev_frame, gray)
-
-        # Sum up the differences (motion score)
         score = np.sum(diff)
         motion_scores.append(score)
-
-        # Display the result
-        # cv2.imshow('Frame', frame)
-        # cv2.imshow('Diff', diff)
-
-        # Update the previous frame
-        display_frame(frame,diff)
         prev_frame = gray
 
-        # if cv2.waitKey(1) & 0xFF == ord('q'):
-        #     break
+        # display_frame(frame, diff)
 
     cap.release()
     cv2.destroyAllWindows()
@@ -89,5 +75,5 @@ def diffCalForTestData(videoPath):
 # uncomment to process train data and
 #diffCalForTrainData()
 
-diff=diffCalForTestData('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Queries/video1_1.mp4')
-print(diff)
+diffCalForTestData('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Queries/video1_1.mp4')
+# print(diff)
