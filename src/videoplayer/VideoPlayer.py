@@ -70,11 +70,16 @@ class VideoPlayer:
                 self.update()
 
     def seek_video(self):
-        """Jump to a specific time in the video."""
-        time_sec = simpledialog.askfloat("Seek", "Enter time in seconds to jump to:", parent=self.window)
-        if time_sec is not None and 0 <= time_sec < self.vid.get(cv2.CAP_PROP_FRAME_COUNT) / self.vid.get(cv2.CAP_PROP_FPS):
-            frame_no = time_sec * self.vid.get(cv2.CAP_PROP_FPS)
+        """Jump to a specific frame in the video."""
+        frame_no = simpledialog.askinteger("Seek", "Enter frame number to jump to:", parent=self.window)
+        total_frames = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
+        if frame_no is not None and 0 <= frame_no < total_frames:
             self.vid.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
+
+            # Calculate the corresponding time in seconds for audio synchronization
+            fps = self.vid.get(cv2.CAP_PROP_FPS)
+            time_sec = frame_no / fps
+
             pygame.mixer.music.load(self.audio_source)
             pygame.mixer.music.play(start=time_sec)
             self.update()
