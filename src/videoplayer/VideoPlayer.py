@@ -6,8 +6,8 @@ import threading
 import pygame
 
 class VideoPlayer:
-    def __init__(self, window, window_title, video_source, audio_source):
-        self.window = window
+    def __init__(self, window_title, video_source, audio_source):
+        self.window = tk.Tk()
         self.window.title(window_title)
         self.video_source = video_source
         self.audio_source = audio_source
@@ -21,16 +21,16 @@ class VideoPlayer:
         pygame.init()
         pygame.mixer.init()
 
-        self.canvas = tk.Canvas(window, width=self.vid.get(cv2.CAP_PROP_FRAME_WIDTH), height=self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.canvas = tk.Canvas(self.window, width=self.vid.get(cv2.CAP_PROP_FRAME_WIDTH), height=self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.canvas.pack()
 
-        self.btn_play = ttk.Button(window, text="Play", command=self.play_video)
+        self.btn_play = ttk.Button(self.window, text="Play", command=self.play_video)
         self.btn_play.pack(side=tk.LEFT)
 
-        self.btn_pause = ttk.Button(window, text="Pause", command=self.pause_video)
+        self.btn_pause = ttk.Button(self.window, text="Pause", command=self.pause_video)
         self.btn_pause.pack(side=tk.LEFT)
 
-        self.btn_rewind = ttk.Button(window, text="Rewind", command=self.rewind_video)
+        self.btn_rewind = ttk.Button(self.window, text="Rewind", command=self.rewind_video)
         self.btn_rewind.pack(side=tk.LEFT)
 
         self.btn_seek = ttk.Button(window, text="Seek", command=self.seek_video)
@@ -113,4 +113,4 @@ class VideoPlayer:
 
 # Create a window and pass it to the VideoPlayer class
 root = tk.Tk()
-VideoPlayer(root, "Tkinter Video Player", "D:\\MSCS\\Multimedia_Project\\video-shazam\\dataset\\Videos\\video1.mp4", "D:\MSCS\Multimedia_Project\\video-shazam\\dataset\\Videos\\Audios\\video1.wav")
+VideoPlayer( "Tkinter Video Player", "/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Videos/video1.mp4", "/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Audios/video1.wav")
