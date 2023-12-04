@@ -17,7 +17,7 @@ from tensorflow.keras.models import load_model
 from motionvector.Motion import diffCalForTestData
 from signature.Model import preprocess_data
 from videoplayer.VideoPlayer import VideoPlayer
-
+from constants import FilePaths as constants
 
 total_time=0
 
@@ -42,6 +42,7 @@ class Pipeline():
         self.model=None
         self.testFrames =list()
         self.testMotionResidue=None
+        self.trainMotionResidue=dict()
         self.newWidth=100
         self.newHeight=100
         self.videoPaths=dict()
@@ -132,6 +133,18 @@ class Pipeline():
         logger.info("Done extracting Frames.")
 
     @time_it
+    def loadTrainMotionResidue(self,path):
+        logger.info("Loading Pretrained Motion Residue")
+        self.trainMotionDiff = dict()
+        with open(path, "r") as filestream:
+            print(filestream.readline())
+            for line in filestream.readlines():
+                label, residueX = line.split("[")
+                label = label.strip(",")
+                residue = eval("[" + residueX)
+                self.trainMotionDiff[label] = residue
+        logger.info("Done loading Pretrained Motion Residue")
+    @time_it
     def extractMotionResidue(self):
         logger.info("Extracting Motion Residue")
         self.testMotionResidue=diffCalForTestData(self.testFilePath)
@@ -151,12 +164,12 @@ class Pipeline():
 
 if __name__ == "__main__":
 
-    pipeline=Pipeline("/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Queries/video1_1.mp4")
-    pipeline.load_audio_paths('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Audios')
-    pipeline.load_video_paths('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Videos')
-    pipeline.loadLabels('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Data/Train',
-                        '/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Data/Test')
-    pipeline.loadPreTrainedModel('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Data/SavedModel/signatureDetect.h5')
+    pipeline=Pipeline(constants.QUERY_PATH)
+    pipeline.load_audio_paths(constants.AUDIO_FILE_PATH)
+    pipeline.load_video_paths(constants.VIDEO_FILE_PATH)
+    pipeline.loadLabels(constants.TRAIN_DATA_PATH,constants.TEST_DATA_PATH)
+    pipeline.loadPreTrainedModel(constants.PRE_TRAINED_MODEL_PATH)
+    pipeline.loadTrainMotionResidue(constants.MOTION_RESIDUE_PATH)
     pipeline.extract_frames()
     pipeline.extractMotionResidue()
     print(pipeline.predict(pipeline.testFrames[0]))
