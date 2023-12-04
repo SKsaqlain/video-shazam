@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+#ignore FilePaths changes to  be pushed to git
+src/constants/FilePaths.py
 
 #ignore huge datasets
 dataset/Audios
