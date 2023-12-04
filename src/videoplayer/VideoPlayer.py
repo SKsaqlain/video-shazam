@@ -33,6 +33,9 @@ class VideoPlayer:
         self.btn_rewind = ttk.Button(self.window, text="Rewind", command=self.rewind_video)
         self.btn_rewind.pack(side=tk.LEFT)
 
+        self.btn_seek = ttk.Button(window, text="Seek", command=self.seek_video)
+        self.btn_seek.pack(side=tk.LEFT)
+
         self.delay = int(1000 / self.vid.get(cv2.CAP_PROP_FPS))
         self.playing = False
         self.paused = False
@@ -65,6 +68,16 @@ class VideoPlayer:
                 pygame.mixer.music.load(self.audio_source)
                 pygame.mixer.music.play(start=time_sec)
                 self.update()
+
+    def seek_video(self):
+        """Jump to a specific time in the video."""
+        time_sec = simpledialog.askfloat("Seek", "Enter time in seconds to jump to:", parent=self.window)
+        if time_sec is not None and 0 <= time_sec < self.vid.get(cv2.CAP_PROP_FRAME_COUNT) / self.vid.get(cv2.CAP_PROP_FPS):
+            frame_no = time_sec * self.vid.get(cv2.CAP_PROP_FPS)
+            self.vid.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
+            pygame.mixer.music.load(self.audio_source)
+            pygame.mixer.music.play(start=time_sec)
+            self.update()
 
     def stream(self):
         while self.running and self.playing:
@@ -99,5 +112,4 @@ class VideoPlayer:
         self.window.destroy()
 
 # Create a window and pass it to the VideoPlayer class
-
 VideoPlayer( "Tkinter Video Player", "/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Videos/video1.mp4", "/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Audios/video1.wav")
