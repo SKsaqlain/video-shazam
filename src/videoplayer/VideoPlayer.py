@@ -33,7 +33,7 @@ class VideoPlayer:
         self.btn_rewind = ttk.Button(self.window, text="Rewind", command=self.rewind_video)
         self.btn_rewind.pack(side=tk.LEFT)
 
-        self.btn_seek = ttk.Button(window, text="Seek", command=self.seek_video)
+        self.btn_seek = ttk.Button(self.window, text="Seek", command=self.seek_video)
         self.btn_seek.pack(side=tk.LEFT)
 
         self.delay = int(1000 / self.vid.get(cv2.CAP_PROP_FPS))
