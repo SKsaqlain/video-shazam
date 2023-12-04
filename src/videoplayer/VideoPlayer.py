@@ -112,5 +112,4 @@ class VideoPlayer:
         self.window.destroy()
 
 # Create a window and pass it to the VideoPlayer class
-root = tk.Tk()
 VideoPlayer( "Tkinter Video Player", "/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Videos/video1.mp4", "/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Audios/video1.wav")
