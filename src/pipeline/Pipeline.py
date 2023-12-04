@@ -1,6 +1,9 @@
-import os
 import time
 from functools import wraps
+import cv2
+import numpy as np
+import os
+
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -8,16 +11,12 @@ logger=logging.getLogger(__name__)
 
 
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import cv2
-import numpy as np
 from tensorflow.keras.models import load_model
 
 
 from motionvector.Motion import diffCalForTestData
-
 from signature.Model import preprocess_data
+from videoplayer.VideoPlayer import VideoPlayer
 
 
 total_time=0
@@ -45,8 +44,40 @@ class Pipeline():
         self.testMotionResidue=None
         self.newWidth=100
         self.newHeight=100
+        self.videoPaths=dict()
+        self.audioPaths=dict()
 
+    @time_it
+    def load_video_paths(self,directory):
+        logger.info("Loading video paths")
+        video_paths = {}
+        for filename in os.listdir(directory):
+            if filename.endswith(".mp4"):  # Ensuring only .mp4 files are considered
+                # Extracting the video label (e.g., 'video1' from 'video1.mp4')
+                label = os.path.splitext(filename)[0]
+                # Constructing the full path
+                full_path = os.path.join(directory, filename)
+                # Adding to the dictionary
+                video_paths[label] = full_path
+        logger.info("Done loading video paths")
+        self.videoPaths=video_paths
+        return video_paths
 
+    @time_it
+    def load_audio_paths(self,directory):
+        logger.info("Loading audio paths")
+        audio_paths = {}
+        for filename in os.listdir(directory):
+            if filename.endswith(".wav"):  # Ensuring only .wav files are considered
+                # Extracting the audio label (e.g., 'video1' from 'video1.wav')
+                label = os.path.splitext(filename)[0]
+                # Constructing the full path
+                full_path = os.path.join(directory, filename)
+                # Adding to the dictionary
+                audio_paths[label] = full_path
+        logger.info("Done loading audio paths")
+        self.audioPaths=audio_paths
+        return audio_paths
     @time_it
     def loadLabels(self,trainDir,testDir):
         logger.info("Loading Labels")
@@ -107,17 +138,32 @@ class Pipeline():
         logger.info("Done extracting Motion Residue")
 
 
+    def playVideo(self,label):
+        logger.info("Playing video")
+        vPath=self.videoPaths[label]
+        aPath=self.audioPaths[label]
+        logger.info("Playing video")
+        VideoPlayer( "Video Player", vPath, aPath)
+
+
+
+
 
 if __name__ == "__main__":
 
     pipeline=Pipeline("/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Queries/video1_1.mp4")
+    pipeline.load_audio_paths('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Audios')
+    pipeline.load_video_paths('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Videos')
     pipeline.loadLabels('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Data/Train',
                         '/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Data/Test')
     pipeline.loadPreTrainedModel('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Data/SavedModel/signatureDetect.h5')
     pipeline.extract_frames()
     pipeline.extractMotionResidue()
     print(pipeline.predict(pipeline.testFrames[0]))
+    pipeline.playVideo(pipeline.predict(pipeline.testFrames[0]))
     logger.info("Total time taken: "+str(total_time))
+
+
 
 
 
