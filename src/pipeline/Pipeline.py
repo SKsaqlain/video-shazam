@@ -14,10 +14,13 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import load_model
 
 
+
+# Now you can import your modules
 from motionvector.Motion import diffCalForTestData
 from signature.Model import preprocess_data
 from videoplayer.VideoPlayer import VideoPlayer
 from constants import FilePaths as constants
+
 
 total_time=0
 
@@ -104,8 +107,10 @@ class Pipeline():
         prediction = self.model.predict(img)
 
         predicted_class = np.argmax(prediction, axis=1)
+        predicted_label = self.labels[predicted_class[0]]
         logger.info("Predicted class: "+str(predicted_class[0]))
-        return self.labels[predicted_class[0]]
+        return predicted_label
+        
 
     def downscale_image(self,original_frame, new_width, new_height):
         img_ycrcb = cv2.cvtColor(original_frame, cv2.COLOR_RGB2YCrCb)
@@ -149,7 +154,31 @@ class Pipeline():
         logger.info("Extracting Motion Residue")
         self.testMotionResidue=diffCalForTestData(self.testFilePath)
         logger.info("Done extracting Motion Residue")
+        return self.testMotionResidue
+    
 
+
+    @time_it
+    def find_matching_frames(self, query_array,predicted_label):
+    # Step 1: Indexing the train array
+
+        train_array = self.trainMotionDiff.get(predicted_label, [])
+        train_index = {}
+        for i, value in enumerate(train_array):
+            if value not in train_index:
+                train_index[value] = []
+            train_index[value].append(i)
+
+    # Step 2: Finding matching values
+        first_query, last_query = query_array[0], query_array[-1]
+        if first_query in train_index and last_query in train_index:
+            # Step 3: Checking frame difference
+            query_diff = len(query_array) - 1
+            for first_pos in train_index[first_query]:
+                for last_pos in train_index[last_query]:
+                    if last_pos - first_pos == query_diff:
+                        return first_pos, last_pos
+                    
 
     def playVideo(self,label):
         logger.info("Playing video")
@@ -171,9 +200,14 @@ if __name__ == "__main__":
     pipeline.loadPreTrainedModel(constants.PRE_TRAINED_MODEL_PATH)
     pipeline.loadTrainMotionResidue(constants.MOTION_RESIDUE_PATH)
     pipeline.extract_frames()
-    pipeline.extractMotionResidue()
-    print(pipeline.predict(pipeline.testFrames[0]))
-    pipeline.playVideo(pipeline.predict(pipeline.testFrames[0]))
+    query_motion_residue = pipeline.extractMotionResidue()
+    predicted_label = pipeline.predict(pipeline.testFrames[0])
+    match_positions = pipeline.find_matching_frames(query_motion_residue,predicted_label)
+    if match_positions:
+        print("Match found in", predicted_label, "at positions:", match_positions)
+    else:
+        print("No match found in", predicted_label)
+    pipeline.playVideo(predicted_label)
     logger.info("Total time taken: "+str(total_time))
 
 
