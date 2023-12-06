@@ -4,7 +4,14 @@ from PIL import Image, ImageTk
 import cv2
 import threading
 import pygame
+import os
+import sys
 
+from constants import FilePaths as constants
+
+project_path = "/Users/sms/USC/MS-SEM2/multimedia/video-shazam"
+src_path = os.path.join(project_path, "src")
+sys.path.insert(0, src_path)
 class VideoPlayer:
     def __init__(self, window_title, video_source, audio_source, position = 1):
         self.window = tk.Tk()
@@ -133,4 +140,8 @@ class VideoPlayer:
         self.window.destroy()
 
 # Create a window and pass it to the VideoPlayer class
-VideoPlayer( "Tkinter Video Player", "D:\\MSCS\\Multimedia_Project\\video-shazam\\dataset\\Videos\\video1.mp4", "D:\\MSCS\\Multimedia_Project\\video-shazam\\dataset\\Videos\\Audios\\video1.wav")
+if __name__ == "__main__":
+
+    #Add the the below constants to the FilePaths.py file
+    VideoPlayer( "Tkinter Video Player", constants.VIDEO_PLAYER_VIDEO_PATH, constants.VIDEO_PLAYER_AUDIO_PATH)
+

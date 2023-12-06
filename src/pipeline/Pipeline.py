@@ -13,7 +13,7 @@ logger=logging.getLogger(__name__)
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import load_model
 
-project_path = "D:\\MSCS\\Multimedia_Project\\video-shazam"
+project_path = "/Users/sms/USC/MS-SEM2/multimedia/video-shazam"
 src_path = os.path.join(project_path, "src")
 sys.path.insert(0, src_path)
 
@@ -184,12 +184,20 @@ class Pipeline():
                     
 
     def playVideo(self,label, position):
-        logger.info("Playing video")
+        logger.info("Playing video from position: "+str(position)+" for label: "+label)
         vPath=self.videoPaths[label]
         aPath=self.audioPaths[label]
-        logger.info("Playing video")
         VideoPlayer( "Video Player", vPath, aPath, position)
 
+
+    def validateOffsetAndPlayVideo(self,positons,predicted_label):
+        if positons:
+            logger.info("Match found in "+predicted_label+" at positions: "+str(positons))
+        else:
+            logger.info("No match found in "+predicted_label)
+            return
+        startOffset,endOffset=positons
+        self.playVideo(predicted_label, int(startOffset))
 
 
 
@@ -206,11 +214,7 @@ if __name__ == "__main__":
     query_motion_residue = pipeline.extractMotionResidue()
     predicted_label = pipeline.predict(pipeline.testFrames[0])
     match_positions = pipeline.find_matching_frames(query_motion_residue,predicted_label)
-    if match_positions:
-        print("Match found in", predicted_label, "at positions:", match_positions)
-    else:
-        print("No match found in", predicted_label)
-    pipeline.playVideo(predicted_label, int(match_positions[0]))
+    pipeline.validateOffsetAndPlayVideo(match_positions,predicted_label)
     logger.info("Total time taken: "+str(total_time))
 
 
