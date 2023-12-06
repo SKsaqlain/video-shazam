@@ -3,7 +3,7 @@ from functools import wraps
 import cv2
 import numpy as np
 import os
-
+import sys
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -13,6 +13,9 @@ logger=logging.getLogger(__name__)
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import load_model
 
+project_path = "D:\\MSCS\\Multimedia_Project\\video-shazam"
+src_path = os.path.join(project_path, "src")
+sys.path.insert(0, src_path)
 
 
 # Now you can import your modules
@@ -180,12 +183,12 @@ class Pipeline():
                         return first_pos, last_pos
                     
 
-    def playVideo(self,label):
+    def playVideo(self,label, position):
         logger.info("Playing video")
         vPath=self.videoPaths[label]
         aPath=self.audioPaths[label]
         logger.info("Playing video")
-        VideoPlayer( "Video Player", vPath, aPath)
+        VideoPlayer( "Video Player", vPath, aPath, position)
 
 
 
@@ -207,7 +210,7 @@ if __name__ == "__main__":
         print("Match found in", predicted_label, "at positions:", match_positions)
     else:
         print("No match found in", predicted_label)
-    pipeline.playVideo(predicted_label)
+    pipeline.playVideo(predicted_label, int(match_positions[0]))
     logger.info("Total time taken: "+str(total_time))
 
 
