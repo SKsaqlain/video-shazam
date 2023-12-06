@@ -145,7 +145,8 @@ class Pipeline():
         logger.info("Loading Pretrained Motion Residue")
         self.trainMotionDiff = dict()
         with open(path, "r") as filestream:
-            print(filestream.readline())
+            colnames=filestream.readline()
+            logger.info("colnames: "+colnames)
             for line in filestream.readlines():
                 label, residueX = line.split("[")
                 label = label.strip(",")
@@ -210,12 +211,18 @@ if __name__ == "__main__":
     pipeline.loadLabels(constants.TRAIN_DATA_PATH,constants.TEST_DATA_PATH)
     pipeline.loadPreTrainedModel(constants.PRE_TRAINED_MODEL_PATH)
     pipeline.loadTrainMotionResidue(constants.MOTION_RESIDUE_PATH)
-    pipeline.extract_frames()
-    query_motion_residue = pipeline.extractMotionResidue()
-    predicted_label = pipeline.predict(pipeline.testFrames[0])
-    match_positions = pipeline.find_matching_frames(query_motion_residue,predicted_label)
-    pipeline.validateOffsetAndPlayVideo(match_positions,predicted_label)
-    logger.info("Total time taken: "+str(total_time))
+    while(True):
+        queryPath=input("Enter the path of the query file:\n")
+        startTime = time.time()
+        pipeline.testFilePath=queryPath
+        pipeline.extract_frames()
+        query_motion_residue = pipeline.extractMotionResidue()
+        predicted_label = pipeline.predict(pipeline.testFrames[0])
+        match_positions = pipeline.find_matching_frames(query_motion_residue,predicted_label)
+        endTime=time.time()
+        pipeline.validateOffsetAndPlayVideo(match_positions,predicted_label)
+        print("Total time taken: " + str(endTime - startTime))
+    # logger.info("Total time taken: "+str(total_time))
 
 
 
