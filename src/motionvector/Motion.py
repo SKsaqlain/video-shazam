@@ -73,7 +73,8 @@ def diffCalForTestData(videoPath):
 
 
 # uncomment to process train data and
-#diffCalForTrainData()
+if __name__=='__main__':
+    diffCalForTrainData()
 
-diffCalForTestData('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Queries/video1_1.mp4')
-# print(diff)
+    # diffCalForTestData('/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Queries/video1_1.mp4')
+    # print(diff)

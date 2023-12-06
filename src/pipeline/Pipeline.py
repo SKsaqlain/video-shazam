@@ -13,7 +13,7 @@ logger=logging.getLogger(__name__)
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import load_model
 
-project_path = "D:\\MSCS\\Multimedia_Project\\video-shazam"
+project_path = "/Users/sms/USC/MS-SEM2/multimedia/video-shazam"
 src_path = os.path.join(project_path, "src")
 sys.path.insert(0, src_path)
 
@@ -145,7 +145,8 @@ class Pipeline():
         logger.info("Loading Pretrained Motion Residue")
         self.trainMotionDiff = dict()
         with open(path, "r") as filestream:
-            print(filestream.readline())
+            colnames=filestream.readline()
+            logger.info("colnames: "+colnames)
             for line in filestream.readlines():
                 label, residueX = line.split("[")
                 label = label.strip(",")
@@ -176,7 +177,7 @@ class Pipeline():
         first_query, last_query = query_array[0], query_array[-1]
         if first_query in train_index and last_query in train_index:
             # Step 3: Checking frame difference
-            query_diff = len(query_array) - 1
+            query_diff = len(query_array)-1
             for first_pos in train_index[first_query]:
                 for last_pos in train_index[last_query]:
                     if last_pos - first_pos == query_diff:
@@ -184,12 +185,20 @@ class Pipeline():
                     
 
     def playVideo(self,label, position):
-        logger.info("Playing video")
+        logger.info("Playing video from position: "+str(position)+" for label: "+label)
         vPath=self.videoPaths[label]
         aPath=self.audioPaths[label]
-        logger.info("Playing video")
         VideoPlayer( "Video Player", vPath, aPath, position)
 
+
+    def validateOffsetAndPlayVideo(self,positons,predicted_label):
+        if positons:
+            logger.info("Match found in "+predicted_label+" at positions: "+str(positons))
+        else:
+            logger.info("No match found in "+predicted_label)
+            return
+        startOffset,endOffset=positons
+        self.playVideo(predicted_label, int(startOffset))
 
 
 
@@ -202,16 +211,18 @@ if __name__ == "__main__":
     pipeline.loadLabels(constants.TRAIN_DATA_PATH,constants.TEST_DATA_PATH)
     pipeline.loadPreTrainedModel(constants.PRE_TRAINED_MODEL_PATH)
     pipeline.loadTrainMotionResidue(constants.MOTION_RESIDUE_PATH)
-    pipeline.extract_frames()
-    query_motion_residue = pipeline.extractMotionResidue()
-    predicted_label = pipeline.predict(pipeline.testFrames[0])
-    match_positions = pipeline.find_matching_frames(query_motion_residue,predicted_label)
-    if match_positions:
-        print("Match found in", predicted_label, "at positions:", match_positions)
-    else:
-        print("No match found in", predicted_label)
-    pipeline.playVideo(predicted_label, int(match_positions[0]))
-    logger.info("Total time taken: "+str(total_time))
+    while(True):
+        queryPath=input("Enter the path of the query file:\n")
+        startTime = time.time()
+        pipeline.testFilePath=queryPath
+        pipeline.extract_frames()
+        query_motion_residue = pipeline.extractMotionResidue()
+        predicted_label = pipeline.predict(pipeline.testFrames[0])
+        match_positions = pipeline.find_matching_frames(query_motion_residue,predicted_label)
+        endTime=time.time()
+        pipeline.validateOffsetAndPlayVideo(match_positions,predicted_label)
+        print("Total time taken: " + str(endTime - startTime))
+    # logger.info("Total time taken: "+str(total_time))
 
 
 
