@@ -176,7 +176,7 @@ class Pipeline():
         first_query, last_query = query_array[0], query_array[-1]
         if first_query in train_index and last_query in train_index:
             # Step 3: Checking frame difference
-            query_diff = len(query_array) - 1
+            query_diff = len(query_array)-1
             for first_pos in train_index[first_query]:
                 for last_pos in train_index[last_query]:
                     if last_pos - first_pos == query_diff:
