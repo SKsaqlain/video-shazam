@@ -6,13 +6,14 @@ import threading
 import pygame
 
 class VideoPlayer:
-    def __init__(self, window_title, video_source, audio_source):
+    def __init__(self, window_title, video_source, audio_source, position = 1):
         self.window = tk.Tk()
         self.window.title(window_title)
         self.video_source = video_source
         self.audio_source = audio_source
         self.vid = cv2.VideoCapture(video_source)
         self.running = True
+        self.position = position
 
         if not self.vid.isOpened():
             raise ValueError("Unable to open video source", video_source)
@@ -48,9 +49,24 @@ class VideoPlayer:
         if not self.playing:
             self.playing = True
             self.paused = False
+            self.position = max(1, self.position - 1) 
+            self.vid.set(cv2.CAP_PROP_POS_FRAMES, self.position)  # Set the start frame
+
+            # Calculate corresponding start time in seconds for audio
+            fps = self.vid.get(cv2.CAP_PROP_FPS)
+            start_time = self.position / fps if fps > 0 else 0
+
             pygame.mixer.music.load(self.audio_source)
-            pygame.mixer.music.play()
+            pygame.mixer.music.play(start=start_time)  # Start audio from calculated time
             threading.Thread(target=self.stream).start()
+    
+    # def play_video(self):
+    #     if not self.playing:
+    #         self.playing = True
+    #         self.paused = False
+    #         pygame.mixer.music.load(self.audio_source)
+    #         pygame.mixer.music.play()
+    #         threading.Thread(target=self.stream).start()
 
     def pause_video(self):
         self.paused = not self.paused
@@ -70,11 +86,16 @@ class VideoPlayer:
                 self.update()
 
     def seek_video(self):
-        """Jump to a specific time in the video."""
-        time_sec = simpledialog.askfloat("Seek", "Enter time in seconds to jump to:", parent=self.window)
-        if time_sec is not None and 0 <= time_sec < self.vid.get(cv2.CAP_PROP_FRAME_COUNT) / self.vid.get(cv2.CAP_PROP_FPS):
-            frame_no = time_sec * self.vid.get(cv2.CAP_PROP_FPS)
+        """Jump to a specific frame in the video."""
+        frame_no = simpledialog.askinteger("Seek", "Enter frame number to jump to:", parent=self.window)
+        total_frames = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
+        if frame_no is not None and 0 <= frame_no < total_frames:
             self.vid.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
+
+            # Calculate the corresponding time in seconds for audio synchronization
+            fps = self.vid.get(cv2.CAP_PROP_FPS)
+            time_sec = frame_no / fps
+
             pygame.mixer.music.load(self.audio_source)
             pygame.mixer.music.play(start=time_sec)
             self.update()
@@ -112,4 +133,4 @@ class VideoPlayer:
         self.window.destroy()
 
 # Create a window and pass it to the VideoPlayer class
-VideoPlayer( "Tkinter Video Player", "/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Videos/video1.mp4", "/Users/sms/USC/MS-SEM2/multimedia/video-shazam/dataset/Audios/video1.wav")
+VideoPlayer( "Tkinter Video Player", "D:\\MSCS\\Multimedia_Project\\video-shazam\\dataset\\Videos\\video1.mp4", "D:\\MSCS\\Multimedia_Project\\video-shazam\\dataset\\Videos\\Audios\\video1.wav")
