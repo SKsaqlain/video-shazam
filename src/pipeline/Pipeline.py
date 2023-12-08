@@ -168,14 +168,16 @@ class Pipeline():
 
 
     @time_it
-    def predict_majority_label(self, testFrames):
-        percentage = 30
+    def predict_majority_label(self, testFrames, percentage=30):
+        # percentage = 30
+        logger.info("percentage of frames predicted" + str(percentage))
         num_samples = int(len(testFrames) * (percentage / 100))
+        logger.info("Number of samples"+ str(num_samples))
         sampled_indices = random.sample(range(len(testFrames)), num_samples)
         sampled_frames = [testFrames[i] for i in sampled_indices]
         predicted_labels = [self.predict(frame) for frame in sampled_frames]
         most_common_label = Counter(predicted_labels).most_common(1)[0][0]
-        print("most_common_label: ", most_common_label)
+        logger.info("Label Frequency Distribution: "+ str(dict(Counter(predicted_labels))))
         return most_common_label
 
 
@@ -230,15 +232,15 @@ if __name__ == "__main__":
     pipeline.loadTrainMotionResidue(constants.MOTION_RESIDUE_PATH)
     while(True):
         queryPath=input("Enter the path of the query file:\n")
-        startTime = time.time()
         pipeline.testFilePath=queryPath
         pipeline.extract_frames()
         query_motion_residue = pipeline.extractMotionResidue()
-        predicted_label = pipeline.predict_majority_label(pipeline.testFrames)
+        startTime = time.time()
+        predicted_label = pipeline.predict_majority_label(pipeline.testFrames, 30)
         match_positions = pipeline.find_matching_frames(query_motion_residue,predicted_label)
         endTime=time.time()
+        logger.info("Total time taken to predict and calculate offset: " + str(endTime - startTime))
         pipeline.validateOffsetAndPlayVideo(match_positions,predicted_label)
-        print("Total time taken: " + str(endTime - startTime))
     # logger.info("Total time taken: "+str(total_time))
 
 
