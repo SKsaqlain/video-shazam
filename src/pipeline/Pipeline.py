@@ -4,6 +4,9 @@ import cv2
 import numpy as np
 import os
 import sys
+from collections import Counter
+import random
+
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -13,7 +16,7 @@ logger=logging.getLogger(__name__)
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import load_model
 
-project_path = "/Users/sms/USC/MS-SEM2/multimedia/video-shazam"
+project_path = "C:\\Users\\simra\\Documents\\USC\\Multi media systems\\Project\\video-shazam"
 src_path = os.path.join(project_path, "src")
 sys.path.insert(0, src_path)
 
@@ -111,6 +114,7 @@ class Pipeline():
 
         predicted_class = np.argmax(prediction, axis=1)
         predicted_label = self.labels[predicted_class[0]]
+        print(self.labels)
         logger.info("Predicted class: "+str(predicted_class[0]))
         return predicted_label
         
@@ -123,7 +127,8 @@ class Pipeline():
 
     @time_it
     def extract_frames(self):
-        logger.info("Extracting frames from video")
+        self.testFrames.clear()
+        logger.info("Extracting frames from video" + self.testFilePath)
         vidcap = cv2.VideoCapture(self.testFilePath)
         fps = vidcap.get(cv2.CAP_PROP_FPS)
         success, image = vidcap.read()
@@ -163,6 +168,18 @@ class Pipeline():
 
 
     @time_it
+    def predict_majority_label(self, testFrames):
+        percentage = 30
+        num_samples = int(len(testFrames) * (percentage / 100))
+        sampled_indices = random.sample(range(len(testFrames)), num_samples)
+        sampled_frames = [testFrames[i] for i in sampled_indices]
+        predicted_labels = [self.predict(frame) for frame in sampled_frames]
+        most_common_label = Counter(predicted_labels).most_common(1)[0][0]
+        print("most_common_label: ", most_common_label)
+        return most_common_label
+
+
+    @time_it
     def find_matching_frames(self, query_array,predicted_label):
     # Step 1: Indexing the train array
 
@@ -193,9 +210,9 @@ class Pipeline():
 
     def validateOffsetAndPlayVideo(self,positons,predicted_label):
         if positons:
-            logger.info("Match found in "+predicted_label+" at positions: "+str(positons))
+            logger.info("Match found in " + predicted_label + " at positions: "+str(positons))
         else:
-            logger.info("No match found in "+predicted_label)
+            logger.info("No match found in ", predicted_label)
             return
         startOffset,endOffset=positons
         self.playVideo(predicted_label, int(startOffset))
@@ -217,7 +234,7 @@ if __name__ == "__main__":
         pipeline.testFilePath=queryPath
         pipeline.extract_frames()
         query_motion_residue = pipeline.extractMotionResidue()
-        predicted_label = pipeline.predict(pipeline.testFrames[0])
+        predicted_label = pipeline.predict_majority_label(pipeline.testFrames)
         match_positions = pipeline.find_matching_frames(query_motion_residue,predicted_label)
         endTime=time.time()
         pipeline.validateOffsetAndPlayVideo(match_positions,predicted_label)

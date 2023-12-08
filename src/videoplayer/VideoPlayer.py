@@ -35,6 +35,9 @@ class VideoPlayer:
         self.btn_play = ttk.Button(self.window, text="Play", command=self.play_video)
         self.btn_play.pack(side=tk.LEFT)
 
+        self.btn_reset = ttk.Button(self.window, text="Reset", command=self.reset_video)
+        self.btn_reset.pack(side=tk.LEFT)
+
         self.btn_pause = ttk.Button(self.window, text="Pause", command=self.pause_video)
         self.btn_pause.pack(side=tk.LEFT)
 
@@ -66,6 +69,13 @@ class VideoPlayer:
             pygame.mixer.music.load(self.audio_source)
             pygame.mixer.music.play(start=start_time)  # Start audio from calculated time
             threading.Thread(target=self.stream).start()
+
+    def reset_video(self):
+        if self.vid.isOpened():
+            self.vid.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            pygame.mixer.music.load(self.audio_source)
+            pygame.mixer.music.play(start=0)
+            self.update()
     
     # def play_video(self):
     #     if not self.playing:
