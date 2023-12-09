@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import os
 import sys
+from collections import Counter
+import random
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -123,7 +125,8 @@ class Pipeline():
 
     @time_it
     def extract_frames(self):
-        logger.info("Extracting frames from video")
+        self.testFrames.clear()
+        logger.info("Extracting frames from video" + self.testFilePath)
         vidcap = cv2.VideoCapture(self.testFilePath)
         fps = vidcap.get(cv2.CAP_PROP_FPS)
         success, image = vidcap.read()
@@ -160,7 +163,18 @@ class Pipeline():
         logger.info("Done extracting Motion Residue")
         return self.testMotionResidue
     
-
+    @time_it
+    def predict_majority_label(self, testFrames, percentage=30):
+        # percentage = 30
+        logger.info("percentage of frames predicted" + str(percentage))
+        num_samples = int(len(testFrames) * (percentage / 100))
+        logger.info("Number of samples"+ str(num_samples))
+        sampled_indices = random.sample(range(len(testFrames)), num_samples)
+        sampled_frames = [testFrames[i] for i in sampled_indices]
+        predicted_labels = [self.predict(frame) for frame in sampled_frames]
+        most_common_label = Counter(predicted_labels).most_common(1)[0][0]
+        logger.info("Label Frequency Distribution: "+ str(dict(Counter(predicted_labels))))
+        return most_common_label
 
     @time_it
     def find_matching_frames(self, query_array,predicted_label):
@@ -213,15 +227,15 @@ if __name__ == "__main__":
     pipeline.loadTrainMotionResidue(constants.MOTION_RESIDUE_PATH)
     while(True):
         queryPath=input("Enter the path of the query file:\n")
-        startTime = time.time()
         pipeline.testFilePath=queryPath
         pipeline.extract_frames()
         query_motion_residue = pipeline.extractMotionResidue()
-        predicted_label = pipeline.predict(pipeline.testFrames[0])
+        startTime = time.time()
+        predicted_label = pipeline.predict_majority_label(pipeline.testFrames, 30)
         match_positions = pipeline.find_matching_frames(query_motion_residue,predicted_label)
         endTime=time.time()
+        logger.info("Total time taken to predict and calculate offset: " + str(endTime - startTime))
         pipeline.validateOffsetAndPlayVideo(match_positions,predicted_label)
-        print("Total time taken: " + str(endTime - startTime))
     # logger.info("Total time taken: "+str(total_time))
 
 
